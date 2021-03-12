@@ -1,17 +1,35 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
-
-workflows:
-  test-env-vars:
-    jobs:
-      - build
+# Use a package of configuration called an orb.
+commands:
+  print_pipeline_id:
+    description: "prints the Circle CI Workflow ID from its environment variable"
+    parameters:
+      id:
+        type: string
+    steps:
+      - run: echo << parameters.id >>
 
 jobs:
-  build:
+  save_hello_world_output:
     docker:
-      - image: cimg/base:2020.01
+      - image: circleci/node:13.8.0 
     steps:
-      - checkout
+      - print_pipeline_id:
+           id: << pipelines.id >>
+  on_fail:
+    docker:
+      - image: circleci/node:13.8.0 
+    steps:
       - run:
-          name: "echo an env var that is part of our project"
-          command: |
-            echo $CIRCLE_PREVIOUS_BUILD_NUM
+         command: echo "failed"
+         when: on_fail
+
+      
+workflows:
+  # Name the workflow "welcome"
+  welcome:
+    # Run the welcome/run job in its own container
+    jobs:
+      - save_hello_world_output
+      
